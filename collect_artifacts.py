@@ -40,7 +40,7 @@ async def run(args: argparse.Namespace) -> None:
             record_har_content="embed",
         )
         page = await context.new_page()
-        await page.goto(args.url, wait_until="networkidle")
+        await page.goto(args.url, wait_until="networkidle", timeout=300_000)
 
         dom_path.write_text(await page.content(), encoding="utf-8")
         await page.screenshot(path=str(screenshot_path), full_page=True)
