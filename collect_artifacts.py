@@ -34,10 +34,16 @@ async def run(args: argparse.Namespace) -> None:
 
     async with async_playwright() as playwright:
         browser = await playwright.chromium.connect_over_cdp(args.cdp_url)
+        context_options = {
+            "ignore_https_errors": True,
+            "record_har_path": str(har_path),
+            "record_har_content": "embed",
+        }
+        if args.proxy_url:
+            context_options["proxy"] = {"server": args.proxy_url}
+
         context = await browser.new_context(
-            ignore_https_errors=True,
-            record_har_path=str(har_path),
-            record_har_content="embed",
+            **context_options,
         )
         page = await context.new_page()
         await page.goto(args.url, wait_until="networkidle", timeout=300_000)
@@ -68,6 +74,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--har-path", help="Explicit HAR file path")
     parser.add_argument("--dom-path", help="Explicit DOM file path")
     parser.add_argument("--screenshot-path", help="Explicit screenshot path")
+    parser.add_argument(
+        "--proxy-url",
+        help="Proxy URL (e.g., http://127.0.0.1:8080) used to route browser requests",
+    )
     return parser.parse_args()
 
 
